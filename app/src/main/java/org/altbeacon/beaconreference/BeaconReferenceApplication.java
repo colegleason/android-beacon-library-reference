@@ -1,5 +1,7 @@
 package org.altbeacon.beaconreference;
 
+import android.Manifest;
+import android.app.AlertDialog;
 import android.app.Application;
 import android.app.Notification;
 import android.app.NotificationChannel;
@@ -7,17 +9,23 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.TaskStackBuilder;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Build;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
 import org.altbeacon.beacon.BeaconManager;
 import org.altbeacon.beacon.BeaconParser;
+import org.altbeacon.beacon.Identifier;
 import org.altbeacon.beacon.Region;
 import org.altbeacon.beacon.powersave.BackgroundPowerSaver;
 import org.altbeacon.beacon.startup.RegionBootstrap;
 import org.altbeacon.beacon.startup.BootstrapNotifier;
+
+import java.util.Date;
+
 
 /**
  * Created by dyoung on 12/13/13.
@@ -29,9 +37,14 @@ public class BeaconReferenceApplication extends Application implements Bootstrap
     private boolean haveDetectedBeaconsSinceBoot = false;
     private MonitoringActivity monitoringActivity = null;
     private String cumulativeLog = "";
+    private static final int PERMISSION_REQUEST_COARSE_LOCATION = 1;
 
-    public void onCreate() {
+
+
+    public void onCreate( ) {
         super.onCreate();
+
+
         BeaconManager beaconManager = org.altbeacon.beacon.BeaconManager.getInstanceForApplication(this);
 
         // By default the AndroidBeaconLibrary will only find AltBeacons.  If you wish to make it
@@ -41,9 +54,12 @@ public class BeaconReferenceApplication extends Application implements Bootstrap
         // layout expression for other beacon types, do a web search for "setBeaconLayout"
         // including the quotes.
         //
-        //beaconManager.getBeaconParsers().clear();
-        //beaconManager.getBeaconParsers().add(new BeaconParser().
-        //        setBeaconLayout("m:2-3=beac,i:4-19,i:20-21,i:22-23,p:24-24,d:25-25"));
+        beaconManager.getBeaconParsers().clear();
+//        beaconManager.getBeaconParsers().add(new BeaconParser().
+//                setBeaconLayout("m:2-3=0215,i:4-19,i:20-21,i:22-23,p:24-24"));
+        beaconManager.getBeaconParsers().add(new BeaconParser().
+                setBeaconLayout("m:2-3=0215,i:4-19,i:20-21,i:22-23,p:24-24"));
+
 
         beaconManager.setDebug(true);
 
@@ -85,8 +101,10 @@ public class BeaconReferenceApplication extends Application implements Bootstrap
 
         Log.d(TAG, "setting up background monitoring for beacons and power saving");
         // wake up the app when a beacon is seen
-        Region region = new Region("backgroundRegion",
-                null, null, null);
+        Identifier uuid = Identifier.parse("f7826da6-4fa2-4e98-8024-bc5b71e0893e");
+        Identifier majorId = Identifier.parse("555");
+        Region region = new Region("winchesterThurston",
+                uuid, majorId, null);
         regionBootstrap = new RegionBootstrap(this, region);
 
         // simply constructing this class and holding a reference to it in your custom Application
